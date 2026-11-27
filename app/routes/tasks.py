@@ -1,4 +1,4 @@
-from sqlalchemy import or_
+
 from datetime import datetime
 
 from flask import Blueprint, render_template, redirect, url_for, flash, request
@@ -91,51 +91,48 @@ def validate_task_form():
     return data, None
 
 
-
 @tasks.route("/")
 @login_required
 def index():
-    task_query = Task.query.filter_by(
+    user_tasks = Task.query.filter_by(
         user_id=current_user.id
-    )
+    ).order_by(Task.created_at.desc()).all()
 
-    search = request.args.get("q", "").strip()
-    status = request.args.get("status", "").strip()
-    priority = request.args.get("priority", "").strip()
+    return render_template("tasks/index.html", tasks=user_tasks)
 
-    # Buscar por título o descripción
-    if search:
-        task_query = task_query.filter(
-            or_(
-                Task.title.ilike(f"%{search}%"),
-                Task.description.ilike(f"%{search}%")
+
+@tasks.route("/create", methods=["GET", "POST"])
+@login_required
+def create():
+    projects, categories = get_form_options()
+
+    if request.method == "POST":
+        data, error = validate_task_form()
+
+        if error:
+            flash(error, "danger")
+            return render_template(
+                "tasks/create.html",
+                projects=projects,
+                categories=categories
             )
+
+        new_task = Task(
+            **data,
+            user_id=current_user.id
         )
 
-    # Filtrar por estado
-    if status in VALID_STATUSES:
-        task_query = task_query.filter_by(status=status)
-    else:
-        status = ""
+        db.session.add(new_task)
+        db.session.commit()
 
-    # Filtrar por prioridad
-    if priority in VALID_PRIORITIES:
-        task_query = task_query.filter_by(priority=priority)
-    else:
-        priority = ""
-
-    user_tasks = task_query.order_by(
-        Task.created_at.desc()
-    ).all()
+        flash("La tarea se creó correctamente.", "success")
+        return redirect(url_for("tasks.index"))
 
     return render_template(
-        "tasks/index.html",
-        tasks=user_tasks,
-        search=search,
-        selected_status=status,
-        selected_priority=priority
+        "tasks/create.html",
+        projects=projects,
+        categories=categories
     )
-
 
 
 @tasks.route("/<int:task_id>/edit", methods=["GET", "POST"])
@@ -177,40 +174,6 @@ def edit(task_id):
     return render_template(
         "tasks/edit.html",
         task=task,
-        projects=projects,
-        categories=categories
-    )
-
-
-@tasks.route("/create", methods=["GET", "POST"])
-@login_required
-def create():
-    projects, categories = get_form_options()
-
-    if request.method == "POST":
-        data, error = validate_task_form()
-
-        if error:
-            flash(error, "danger")
-            return render_template(
-                "tasks/create.html",
-                projects=projects,
-                categories=categories
-            )
-
-        new_task = Task(
-            user_id=current_user.id,
-            **data
-        )
-
-        db.session.add(new_task)
-        db.session.commit()
-
-        flash("La tarea se creó correctamente.", "success")
-        return redirect(url_for("tasks.index"))
-
-    return render_template(
-        "tasks/create.html",
         projects=projects,
         categories=categories
     )
