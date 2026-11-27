@@ -1,11 +1,12 @@
 
+
 {% extends "base.html" %}
 
 {% block title %}Mis tareas | ITLA TaskFlow{% endblock %}
 
 {% block content %}
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
     <div>
         <h2 class="fw-bold">Mis tareas</h2>
         <p class="text-muted">Administra y organiza tus actividades.</p>
@@ -16,10 +17,70 @@
     </a>
 </div>
 
+<!-- Búsqueda y filtros -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('tasks.index') }}">
+            <div class="row g-3 align-items-end">
+
+                <div class="col-md-4">
+                    <label for="q" class="form-label">Buscar tarea</label>
+                    <input
+                        type="text"
+                        class="form-control"
+                        id="q"
+                        name="q"
+                        placeholder="Buscar por título o descripción..."
+                        value="{{ search }}"
+                    >
+                </div>
+
+                <div class="col-md-3">
+                    <label for="status" class="form-label">Estado</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">Todos los estados</option>
+                        <option value="pending" {% if selected_status == 'pending' %}selected{% endif %}>Pendiente</option>
+                        <option value="in_progress" {% if selected_status == 'in_progress' %}selected{% endif %}>En progreso</option>
+                        <option value="completed" {% if selected_status == 'completed' %}selected{% endif %}>Completada</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label for="priority" class="form-label">Prioridad</label>
+                    <select class="form-select" id="priority" name="priority">
+                        <option value="">Todas las prioridades</option>
+                        <option value="high" {% if selected_priority == 'high' %}selected{% endif %}>Alta</option>
+                        <option value="medium" {% if selected_priority == 'medium' %}selected{% endif %}>Media</option>
+                        <option value="low" {% if selected_priority == 'low' %}selected{% endif %}>Baja</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        Filtrar
+                    </button>
+                    <a href="{{ url_for('tasks.index') }}" class="btn btn-outline-secondary">
+                        Limpiar
+                    </a>
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Listado de tareas -->
 <div class="card shadow-sm border-0">
     <div class="card-body">
 
         {% if tasks %}
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0">Resultados</h5>
+                <span class="text-muted small">
+                    {{ tasks|length }} tarea(s) encontrada(s)
+                </span>
+            </div>
+
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
                     <thead>
@@ -37,7 +98,6 @@
                         {% for task in tasks %}
                             <tr>
                                 <td class="fw-semibold">{{ task.title }}</td>
-
                                 <td>{{ task.description or 'Sin descripción' }}</td>
 
                                 <td>
@@ -66,7 +126,6 @@
 
                                 <td class="text-center">
                                     <div class="d-flex justify-content-center gap-2">
-
                                         <a href="{{ url_for('tasks.edit', task_id=task.id) }}"
                                            class="btn btn-sm btn-outline-primary">
                                             Editar
@@ -82,7 +141,6 @@
                                                 Eliminar
                                             </button>
                                         </form>
-
                                     </div>
                                 </td>
                             </tr>
@@ -93,11 +151,13 @@
 
         {% else %}
             <div class="text-center py-5">
-                <h5>Aún no tienes tareas registradas.</h5>
-                <p class="text-muted">Comienza creando tu primera tarea.</p>
+                <h5>No se encontraron tareas.</h5>
+                <p class="text-muted">
+                    Prueba cambiando los filtros o crea una nueva tarea.
+                </p>
 
                 <a href="{{ url_for('tasks.create') }}" class="btn btn-primary">
-                    Crear mi primera tarea
+                    Crear nueva tarea
                 </a>
             </div>
         {% endif %}
