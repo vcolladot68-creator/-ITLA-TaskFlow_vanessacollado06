@@ -221,3 +221,36 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# ITLA-TaskFlow - Project specific
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Python virtual environments
+venv/
+.venv/
+
+# Flask instance files
+instance/
+
+# Database files
+*.db
+*.sqlite3
+
+# Docker local files
+docker-compose.override.yml
+
+# IDE settings
+.vscode/
+.idea/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
