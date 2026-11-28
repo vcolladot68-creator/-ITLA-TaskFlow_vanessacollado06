@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Nueva tarea | ITLA TaskFlow{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+
+        <div class="mb-4">
+            <h2 class="fw-bold">Crear nueva tarea</h2>
+            <p class="text-muted">Completa los datos de tu actividad.</p>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="mb-3">
+                        <label class="form-label" for="title">Título *</label>
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="title"
+                            name="title"
+                            minlength="3"
+                            maxlength="150"
+                            required
+                            placeholder="Ej. Terminar proyecto de programación"
+                            value="{{ request.form.get('title', '') }}"
+                        >
+                        <div class="form-text">Entre 3 y 150 caracteres.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="description">Descripción</label>
+                        <textarea
+                            class="form-control"
+                            id="description"
+                            name="description"
+                            rows="4"
+                            maxlength="1000"
+                            placeholder="Describe brevemente tu tarea..."
+                        >{{ request.form.get('description', '') }}</textarea>
+                        <div class="form-text">Máximo 1000 caracteres.</div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="status">Estado</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="pending" {% if request.form.get('status', 'pending') == 'pending' %}selected{% endif %}>Pendiente</option>
+                                <option value="in_progress" {% if request.form.get('status') == 'in_progress' %}selected{% endif %}>En progreso</option>
+                                <option value="completed" {% if request.form.get('status') == 'completed' %}selected{% endif %}>Completada</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="priority">Prioridad</label>
+                            <select class="form-select" id="priority" name="priority">
+                                <option value="low" {% if request.form.get('priority') == 'low' %}selected{% endif %}>Baja</option>
+                                <option value="medium" {% if request.form.get('priority', 'medium') == 'medium' %}selected{% endif %}>Media</option>
+                                <option value="high" {% if request.form.get('priority') == 'high' %}selected{% endif %}>Alta</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="due_date">Fecha límite</label>
+                        <input
+                            type="date"
+                            class="form-control"
+                            id="due_date"
+                            name="due_date"
+                            value="{{ request.form.get('due_date', '') }}"
+                        >
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="project_id">Proyecto</label>
+                        <select class="form-select" id="project_id" name="project_id">
+                            <option value="">Sin proyecto</option>
+                            {% for project in projects %}
+                                <option value="{{ project.id }}" {% if request.form.get('project_id') == project.id|string %}selected{% endif %}>
+                                    {{ project.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label" for="category_id">Categoría</label>
+                        <select class="form-select" id="category_id" name="category_id">
+                            <option value="">Sin categoría</option>
+                            {% for category in categories %}
+                                <option value="{{ category.id }}" {% if request.form.get('category_id') == category.id|string %}selected{% endif %}>
+                                    {{ category.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            Guardar tarea
+                        </button>
+
+                        <a href="{{ url_for('tasks.index') }}" class="btn btn-outline-secondary">
+                            Cancelar
+                        </a>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
